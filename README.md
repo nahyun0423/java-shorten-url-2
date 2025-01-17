@@ -1,2 +1,7 @@
-# java-shorten-url
-단축 url - java 프로젝트
+
+
+
+
+# java-shorten-url-2
+java - 단축 url
+
