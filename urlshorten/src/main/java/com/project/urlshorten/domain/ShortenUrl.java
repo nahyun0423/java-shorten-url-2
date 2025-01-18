@@ -29,4 +29,8 @@ public class ShortenUrl {
 
     public ShortenUrl() {
     }
+
+    public void increaseRedirectCount() {
+        this.redirectCount++;
+    }
 }

@@ -4,12 +4,13 @@ import com.project.urlshorten.application.ShortenUrlService;
 import com.project.urlshorten.domain.ShortenUrl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@Controller
 public class ShortenUrlController {
     private ShortenUrlService shortenUrlService;
 
@@ -38,5 +39,12 @@ public class ShortenUrlController {
     public ResponseEntity<List<ShortenUrlDto>> getAllShortenUrl() {
         List<ShortenUrlDto> urlList = shortenUrlService.findAllShortenUrl();
         return ResponseEntity.ok(urlList);
+    }
+
+    @GetMapping("/{shortKey}")
+    public String redirectShortenUrl(@PathVariable String shortKey) {
+        ShortenUrl shortenUrl = shortenUrlService.findShortenUrl(shortKey);
+        shortenUrlService.increaseRedirectCount(shortenUrl);
+        return "redirect:" + shortenUrl.getOriginalUrl();
     }
 }

@@ -39,4 +39,9 @@ public class ShortenUrlService {
                 .map(shortenUrl -> new ShortenUrlDto(shortenUrl))
                 .collect(Collectors.toList());
     }
+
+    public void increaseRedirectCount(ShortenUrl shortenUrl) {
+        shortenUrl.increaseRedirectCount();
+        shortenUrlRepository.save(shortenUrl);
+    }
 }
