@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ShortenUrlDto {
-    private Long id;
     private String originalUrl;
     private String shortKey;
     private int redirectCount;
@@ -15,5 +14,6 @@ public class ShortenUrlDto {
     public ShortenUrlDto(ShortenUrl shortenUrl) {
         this.originalUrl = shortenUrl.getOriginalUrl();
         this.shortKey = shortenUrl.getShortKey();
-        this.redirectCount = shortenUrl.getRedirectCount();    }
+        this.redirectCount = shortenUrl.getRedirectCount();
+    }
 }
