@@ -2,6 +2,7 @@ package com.project.urlshorten.application;
 
 import com.project.urlshorten.domain.ShortKeyGenerator;
 import com.project.urlshorten.domain.ShortenUrl;
+import com.project.urlshorten.exception.CustomException;
 import com.project.urlshorten.infrastructure.ShortenUrlRepository;
 import com.project.urlshorten.presentation.ShortenUrlDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.project.urlshorten.exception.ErrorCode.SHORTKEY_NOT_FOUND;
 
 @Service
 public class ShortenUrlService {
@@ -31,6 +34,9 @@ public class ShortenUrlService {
     }
 
     public ShortenUrl findShortenUrl(String shortKey) {
+        if (shortenUrlRepository.findByShortKey(shortKey) == null) {
+            throw new CustomException(SHORTKEY_NOT_FOUND);
+        }
         return shortenUrlRepository.findByShortKey(shortKey);
     }
 
