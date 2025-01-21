@@ -7,12 +7,15 @@ import com.project.urlshorten.infrastructure.ShortenUrlRepository;
 import com.project.urlshorten.presentation.ShortenUrlDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.project.urlshorten.exception.ErrorCode.SHORTKEY_NOT_FOUND;
 
+@Transactional
 @Service
 public class ShortenUrlService {
 
@@ -34,10 +37,12 @@ public class ShortenUrlService {
     }
 
     public ShortenUrl findShortenUrl(String shortKey) {
-        if (shortenUrlRepository.findByShortKey(shortKey) == null) {
+        Optional<ShortenUrl> foundShortenUrl = shortenUrlRepository.findByShortKey(shortKey);
+
+        if (foundShortenUrl.isEmpty()) {
             throw new CustomException(SHORTKEY_NOT_FOUND);
         }
-        return shortenUrlRepository.findByShortKey(shortKey);
+        return foundShortenUrl.get();
     }
 
     public List<ShortenUrlDto> findAllShortenUrl() {

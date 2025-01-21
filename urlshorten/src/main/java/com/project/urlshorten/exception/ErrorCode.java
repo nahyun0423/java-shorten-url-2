@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-@AllArgsConstructor // 생성자 자동 생성
 @Getter
 public enum ErrorCode {
 
@@ -13,4 +12,9 @@ public enum ErrorCode {
 
     private final HttpStatus httpStatus;
     private final String message;
+
+    ErrorCode(HttpStatus httpStatus, String message) {
+        this.httpStatus = httpStatus;
+        this.message = message;
+    }
 }
