@@ -2,20 +2,20 @@ package com.project.urlshorten.application;
 
 import com.project.urlshorten.domain.ShortKeyGenerator;
 import com.project.urlshorten.domain.ShortenUrl;
-import com.project.urlshorten.exception.CustomException;
+import com.project.urlshorten.exception.ShortkeyNotFoundException;
 import com.project.urlshorten.infrastructure.ShortenUrlRepository;
 import com.project.urlshorten.presentation.ShortenUrlDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.project.urlshorten.exception.ErrorCode.SHORTKEY_NOT_FOUND;
-
-@Transactional
 @Service
 public class ShortenUrlService {
 
@@ -28,31 +28,52 @@ public class ShortenUrlService {
         this.shortKeyGenerator = shortKeyGenerator;
     }
 
-    public String createShortKey(String originalUrl) {
-        return shortKeyGenerator.generateShortKey(originalUrl);
+    @Transactional
+    public ShortenUrlDto createShortKey(String originalUrl) {
+        try {
+            new URI(originalUrl);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException();
+        }
+
+        String shortKey = shortKeyGenerator.generateShortKey(originalUrl);
+        ShortenUrl shortenUrl = saveShortenUrl(new ShortenUrl(originalUrl, shortKey));
+
+        return new ShortenUrlDto(shortenUrl);
     }
 
+    @Transactional
     public ShortenUrl saveShortenUrl(ShortenUrl shortenUrl) {
         return shortenUrlRepository.save(shortenUrl);
     }
 
-    public ShortenUrl findShortenUrl(String shortKey) {
+    @Transactional(readOnly = true)
+    public ShortenUrlDto findShortenUrl(String shortKey) {
         Optional<ShortenUrl> foundShortenUrl = shortenUrlRepository.findByShortKey(shortKey);
 
         if (foundShortenUrl.isEmpty()) {
-            throw new CustomException(SHORTKEY_NOT_FOUND);
+            throw new ShortkeyNotFoundException(shortKey);
         }
+        return new ShortenUrlDto(foundShortenUrl.get());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ShortenUrlDto> findAllShortenUrl(Pageable pageable) {
+        Page<ShortenUrl> shortenUrls = shortenUrlRepository.findAll(pageable);
+
+        return shortenUrls.map(shortenUrl -> new ShortenUrlDto(shortenUrl));
+    }
+
+    @Transactional
+    public ShortenUrl increaseRedirectCount(String shortKey) {
+        Optional<ShortenUrl> foundShortenUrl = shortenUrlRepository.findByShortKey(shortKey);
+
+        if (foundShortenUrl.isEmpty()) {
+            throw new ShortkeyNotFoundException(shortKey);
+        }
+
+        foundShortenUrl.get().increaseRedirectCount();
+
         return foundShortenUrl.get();
-    }
-
-    public List<ShortenUrlDto> findAllShortenUrl() {
-        return shortenUrlRepository.findAll().stream()
-                .map(shortenUrl -> new ShortenUrlDto(shortenUrl))
-                .collect(Collectors.toList());
-    }
-
-    public void increaseRedirectCount(ShortenUrl shortenUrl) {
-        shortenUrl.increaseRedirectCount();
-        shortenUrlRepository.save(shortenUrl);
     }
 }
