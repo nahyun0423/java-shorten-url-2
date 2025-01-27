@@ -15,7 +15,6 @@ class EncodingShortKeyGeneratorTest {
         String originalUrl = "https://www.google.co.kr";
 
         String shortenUrl1 = generator.generateShortKey(originalUrl);
-        Thread.sleep(1000);
         String shortenUrl2 = generator.generateShortKey(originalUrl);
 
         assertNotEquals(shortenUrl1, shortenUrl2);

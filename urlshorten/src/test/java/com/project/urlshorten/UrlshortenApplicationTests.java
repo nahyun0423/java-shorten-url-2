@@ -2,10 +2,7 @@ package com.project.urlshorten;
 
 import com.project.urlshorten.domain.ShortenUrl;
 import com.project.urlshorten.infrastructure.ShortenUrlRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import io.restassured.RestAssured;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UrlshortenApplicationTests {
 
     @LocalServerPort
@@ -62,6 +60,7 @@ class UrlshortenApplicationTests {
 
         // 리다이렉트
         RestAssured.given()
+                .redirects().follow(false)
                 .when()
                 .get("/" + shortKey)
                 .then()

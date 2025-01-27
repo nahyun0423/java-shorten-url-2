@@ -42,14 +42,19 @@ class ShortenUrlServiceTest {
         String expectedShortKey1 = "abcd123";
         String expectedShortKey2 = "abcd456";
 
+        ShortenUrl shortenUrl1 = new ShortenUrl(originalUrl, expectedShortKey1);
+        ShortenUrl shortenUrl2 = new ShortenUrl(originalUrl, expectedShortKey2);
+
         when(shortKeyGenerator.generateShortKey(originalUrl))
                 .thenReturn(expectedShortKey1, expectedShortKey2);
 
-        ShortenUrlDto shortenUrl1 = shortenUrlService.createShortKey(originalUrl);
-        Thread.sleep(1000);
-        ShortenUrlDto shortenUrl2 = shortenUrlService.createShortKey(originalUrl);
+        when(shortenUrlRepository.save(any(ShortenUrl.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertNotEquals(shortenUrl1.getShortKey(), shortenUrl2.getShortKey());
+        ShortenUrlDto result1 = shortenUrlService.createShortKey(originalUrl);
+        ShortenUrlDto result2 = shortenUrlService.createShortKey(originalUrl);
+
+        assertNotEquals(result1.getShortKey(), result2.getShortKey());
     }
 
     @Test
@@ -110,7 +115,8 @@ class ShortenUrlServiceTest {
     void increaseRedirectCountTest() {
         ShortenUrl shortenUrl = new ShortenUrl("https://www.google.co.kr", "abcd123");
 
-        when(shortenUrlRepository.save(shortenUrl)).thenReturn(shortenUrl);
+        when(shortenUrlRepository.findByShortKey("abcd123")).thenReturn(Optional.of(shortenUrl));
+
         ShortenUrl foundShortenUrl = shortenUrlService.increaseRedirectCount(shortenUrl.getShortKey());
 
         assertEquals(1, foundShortenUrl.getRedirectCount());

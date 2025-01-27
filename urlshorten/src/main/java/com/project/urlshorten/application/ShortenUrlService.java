@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ShortenUrlService {
