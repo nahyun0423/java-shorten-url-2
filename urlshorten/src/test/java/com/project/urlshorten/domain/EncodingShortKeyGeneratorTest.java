@@ -10,7 +10,7 @@ class EncodingShortKeyGeneratorTest {
     private EncodingShortKeyGenerator generator = new EncodingShortKeyGenerator();
 
     @Test
-    @DisplayName("같은 url 입력시 다른 단축 url 출력 테스트")
+    @DisplayName("동일한 URL로 두 번 단축 URL 생성하면, 서로 다른 단축 URL을 반환")
     void generateShortKeyTest() throws InterruptedException {
         String originalUrl = "https://www.google.co.kr";
 

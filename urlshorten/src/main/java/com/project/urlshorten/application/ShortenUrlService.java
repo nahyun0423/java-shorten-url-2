@@ -33,7 +33,7 @@ public class ShortenUrlService {
         try {
             new URI(originalUrl);
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("적절한 url 형식이 아닙니다.");
         }
 
         String shortKey = shortKeyGenerator.generateShortKey(originalUrl);
@@ -42,7 +42,6 @@ public class ShortenUrlService {
         return new ShortenUrlDto(shortenUrl);
     }
 
-    @Transactional
     public ShortenUrl saveShortenUrl(ShortenUrl shortenUrl) {
         return shortenUrlRepository.save(shortenUrl);
     }
@@ -52,7 +51,7 @@ public class ShortenUrlService {
         Optional<ShortenUrl> foundShortenUrl = shortenUrlRepository.findByShortKey(shortKey);
 
         if (foundShortenUrl.isEmpty()) {
-            throw new ShortkeyNotFoundException(shortKey);
+            throw new ShortkeyNotFoundException(shortKey + "는 존재하지 않는 shortkey입니다.");
         }
         return new ShortenUrlDto(foundShortenUrl.get());
     }
@@ -72,8 +71,8 @@ public class ShortenUrlService {
             throw new ShortkeyNotFoundException(shortKey);
         }
 
-        foundShortenUrl.get().increaseRedirectCount();
-
-        return foundShortenUrl.get();
+        ShortenUrl shortenUrl = foundShortenUrl.get();
+        shortenUrl.increaseRedirectCount();
+        return shortenUrl;
     }
 }

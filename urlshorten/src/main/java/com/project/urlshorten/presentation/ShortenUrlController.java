@@ -43,7 +43,6 @@ public class ShortenUrlController {
         return ResponseEntity.ok(urlList);
     }
 
-    @Transactional
     @GetMapping("/{shortKey}")
     public String redirectShortenUrl(@PathVariable String shortKey) {
         ShortenUrl shortenUrl = shortenUrlService.increaseRedirectCount(shortKey);
