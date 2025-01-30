@@ -1,5 +1,6 @@
 package com.project.urlshorten.presentation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.urlshorten.application.ShortenUrlService;
 import com.project.urlshorten.domain.ShortenUrl;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -26,6 +29,9 @@ class ShortenUrlControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private ShortenUrlService shortenUrlService;
@@ -57,7 +63,7 @@ class ShortenUrlControllerTest {
     void getShortenUrlTest() throws Exception {
         when(shortenUrlService.findShortenUrl("abcd123")).thenReturn(shortenUrlDto);
 
-        mockMvc.perform(get("/get/abcd123"))
+        mockMvc.perform(get("/shorten-url/abcd123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.originalUrl").value("https://www.google.co.kr"))
                 .andExpect(jsonPath("$.shortKey").value("abcd123"));
@@ -69,12 +75,36 @@ class ShortenUrlControllerTest {
         Page<ShortenUrlDto> urlList = new PageImpl<>(List.of(shortenUrlDto));
         when(shortenUrlService.findAllShortenUrl(any(Pageable.class))).thenReturn(urlList);
 
-        mockMvc.perform(get("/get/all")
+        mockMvc.perform(get("/shorten-url")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].originalUrl").value("https://www.google.co.kr"))
                 .andExpect(jsonPath("$.content[0].shortKey").value("abcd123"));
+    }
+
+    @Test
+    @DisplayName("정상적인 page 범위로 전체 단축 URL을 조회하면, 해당 page 출력")
+    void validPage_getAllShortenUrlTest() throws Exception {
+        mockMvc.perform(get("/shorten-url")
+                        .param("page", "1")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.pageable.pageNumber").value(1))
+                .andExpect(jsonPath("$.pageable.pageSize").value(5));
+    }
+
+    @Test
+    @DisplayName("page 범위 외의 값으로 전체 단축 URL을 조회하면, 400 예외 발생 및 메시지 출력")
+    void invalidPage_getAllShortenUrlTest() throws Exception {
+        mockMvc.perform(get("/shorten-url")
+                        .param("page", "2")
+                        .param("size", "11")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$").value("잘못된 입력값입니다. page : 0~100 / size : 1~10 범위 내로 입력하세요."));
     }
 
     @Test
@@ -85,5 +115,31 @@ class ShortenUrlControllerTest {
         mockMvc.perform(get("/abcd123"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(header().string("Location", "https://www.google.co.kr"));
+    }
+
+    @Test
+    @DisplayName("잘못된 URL을 입력했을 때, 400 예외 발생 및 메시지 출력")
+    void invalidBadUrlTest() throws Exception {
+        Map<String, String> request = new HashMap<>();
+        request.put("originalUrl", "invalidUrl");
+
+        mockMvc.perform(post("/shorten-url")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("올바른 URL 형식이 아닙니다."));
+    }
+
+    @Test
+    @DisplayName("URL을 입력하지 않았을 때, 400 예외 발생 및 메시지 출력")
+    void invalidEmptyUrlTest() throws Exception {
+        Map<String, String> request = new HashMap<>();
+        request.put("originalUrl", "");
+
+        mockMvc.perform(post("/shorten-url")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("URL은 필수 입력값입니다."));
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 
 @Service
@@ -29,12 +27,6 @@ public class ShortenUrlService {
 
     @Transactional
     public ShortenUrlDto createShortKey(String originalUrl) {
-        try {
-            new URI(originalUrl);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("적절한 url 형식이 아닙니다.");
-        }
-
         String shortKey = shortKeyGenerator.generateShortKey(originalUrl);
         ShortenUrl shortenUrl = saveShortenUrl(new ShortenUrl(originalUrl, shortKey));
 
