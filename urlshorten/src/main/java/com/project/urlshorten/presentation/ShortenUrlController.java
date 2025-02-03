@@ -27,8 +27,8 @@ public class ShortenUrlController {
     }
 
     @PostMapping("/shorten-url")
-    public ResponseEntity<ShortenUrlDto> createShortenUrl(@Valid @RequestBody ShortenUrlDto requeestDto) {
-        ShortenUrlDto shortenUrlDto = shortenUrlService.createShortKey(requeestDto.getOriginalUrl());
+    public ResponseEntity<ShortenUrlDto> createShortenUrl(@Valid @RequestBody ShortenUrlDto requestDto) {
+        ShortenUrlDto shortenUrlDto = shortenUrlService.createShortKey(requestDto.getOriginalUrl());
         return ResponseEntity.ok(shortenUrlDto);
     }
 
@@ -41,8 +41,7 @@ public class ShortenUrlController {
     @GetMapping("/shorten-url") // ?page=0&size=10 : 첫번째 페이지에 10개 항목만
     public ResponseEntity<Page<ShortenUrlDto>> getAllShortenUrl(
             @RequestParam(defaultValue = "0") @Min(0) @Max(100) int page,
-            @RequestParam(defaultValue = "5") @Min(1) @Max(10) int size)
-    {
+            @RequestParam(defaultValue = "5") @Min(1) @Max(10) int size) {
         Pageable validatedPageable = PageRequest.of(page, size);
         Page<ShortenUrlDto> urlList = shortenUrlService.findAllShortenUrl(validatedPageable);
         return ResponseEntity.ok(urlList);
